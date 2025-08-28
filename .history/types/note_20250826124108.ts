@@ -12,7 +12,7 @@ export type NoteTag = "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
  * backend API.  All fields are required for proper rendering.
  */
 export interface Note {
-  id: string;
+  id: number;
   title: string;
   content: string;
   tag: NoteTag;
