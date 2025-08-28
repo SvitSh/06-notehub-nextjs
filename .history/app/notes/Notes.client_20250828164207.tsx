@@ -36,12 +36,10 @@ export default function NotesClient() {
     placeholderData: (prev) => prev,
   });
 
-  // Безопасные значения по умолчанию для SSR/сборки
-  const items = data?.items ?? [];
-  const perPage = data?.perPage ?? PER_PAGE;
-  const total = data?.total ?? 0;
-
-  const totalPages = Math.ceil(total / perPage);
+  // В ответе есть total и perPage — считаем количество страниц
+  const totalPages = Math.ceil(
+    (data?.total ?? 0) / (data?.perPage ?? PER_PAGE)
+  );
 
   const handlePageChange = (newPage: number) => setPage(newPage);
 
@@ -71,7 +69,8 @@ export default function NotesClient() {
       {isLoading && <p>Loading, please wait...</p>}
       {isError && <p>Could not fetch the list of notes.</p>}
 
-      {items.length > 0 && <NoteList notes={items} />}
+      {/* items вместо notes */}
+      {data && data.items.length > 0 && <NoteList notes={data.items} />}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>

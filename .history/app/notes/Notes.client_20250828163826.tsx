@@ -9,18 +9,16 @@ import Pagination from "@/components/Pagination/Pagination";
 import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
-import { fetchNotes } from "@/lib/api";
-
-// Выводим тип ответа напрямую из функции API
-type FetchNotesResponse = Awaited<ReturnType<typeof fetchNotes>>;
+import { fetchNotes, type FetchNotesResponse } from "@/lib/api";
 
 const PER_PAGE = 12;
 
 /**
- * Клиентский компонент списка заметок:
- * - локальное состояние (поиск, страница, модалка)
- * - загрузка данных через TanStack Query
- * - рендер поисковой строки, пагинации, списка и модалки
+ * Client component for the notes listing page.  Manages local state such as
+ * current page, search value and modal visibility.  Fetches data via
+ * TanStack Query and renders the appropriate child components.  Because
+ * this component is declared with `'use client'` it can leverage browser
+ * APIs and event handlers.
  */
 export default function NotesClient() {
   const [search, setSearch] = useState("");
@@ -32,19 +30,14 @@ export default function NotesClient() {
     queryKey: ["notes", page, PER_PAGE, debouncedSearch],
     queryFn: () =>
       fetchNotes({ page, perPage: PER_PAGE, search: debouncedSearch }),
-    // сохраняем предыдущие данные во время переключения страниц
     placeholderData: (prev) => prev,
   });
 
-  // Безопасные значения по умолчанию для SSR/сборки
-  const items = data?.items ?? [];
-  const perPage = data?.perPage ?? PER_PAGE;
-  const total = data?.total ?? 0;
-
-  const totalPages = Math.ceil(total / perPage);
+  const totalPages = Math.ceil(
+    (data?.total ?? 0) / (data?.perPage ?? PER_PAGE)
+  );
 
   const handlePageChange = (newPage: number) => setPage(newPage);
-
   const handleSearch = (value: string) => {
     setSearch(value);
     setPage(1);
@@ -70,8 +63,7 @@ export default function NotesClient() {
 
       {isLoading && <p>Loading, please wait...</p>}
       {isError && <p>Could not fetch the list of notes.</p>}
-
-      {items.length > 0 && <NoteList notes={items} />}
+      {data && data.notes.length > 0 && <NoteList notes={data.notes} />}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
